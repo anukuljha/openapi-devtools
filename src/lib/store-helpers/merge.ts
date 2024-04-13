@@ -100,8 +100,18 @@ export const mergeLeaves = (dest: Leaf, src: Leaf): Leaf => {
       destSchema.responseHeaders = mergeSchemas(schemas);
     }
 
-    destSchema.examples = [...(destSchema.examples || []), ...(srcSchema.examples || [])];
 
+    const newExamples = srcSchema.examples?.filter((srcExample) => {
+      return !destSchema.examples?.some((destExample) => {
+        return (
+          destExample.path === srcExample.path &&
+          JSON.stringify(destExample.query_params) === JSON.stringify(srcExample.query_params) &&
+          JSON.stringify(destExample.request) === JSON.stringify(srcExample.request)
+        );
+      });
+    });
+
+    destSchema.examples = [...(destSchema.examples || []), ...(newExamples || [])];
     // Merge responses
     mergeResponse(destSchema, methodObj.response);
   }
